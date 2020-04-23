@@ -19,8 +19,8 @@ copy env.example .env
 ```
 
 2. Create database **nodejs_auth**
-3. Setting database name, username, password and host in your .env file
-4. Do the following instructions if you're done setting database in your .env file
+3. Setting database name, username, password and host in _config/config.json_ file
+4. Do the following instructions if you're done setting database in _config/config.json_ file
 
 ```bash
 npx sequelize db:migrate
@@ -29,5 +29,5 @@ npx sequelize db:migrate
 ## To run the application
 
 ```bash
-nodemon serve
+nodemon server
 ```

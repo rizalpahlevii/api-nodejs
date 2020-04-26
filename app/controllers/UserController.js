@@ -5,33 +5,7 @@ const bcrypt = require("bcrypt");
 const UserModel = require("../models/user");
 const User = UserModel(sequelize, Sequelize);
 const { check, validationResult } = require("express-validator");
-
-exports.validate = (method) => {
-  switch (method) {
-    case "store": {
-      return [
-        check("name", "Name is required")
-          .isLength({ min: 3 })
-          .withMessage("Name length minimum of 5"),
-
-        check("username", "Username is required")
-          .isLength({ min: 5 })
-          .withMessage("Username length minimum of 5")
-          .exists(),
-
-        check("email", "Email is required")
-          .isLength({ min: 5 })
-          .withMessage("Username length minimum of 5")
-          .exists()
-          .isEmail(),
-
-        check("password", "Password is required")
-          .isLength({ min: 6 })
-          .withMessage("Username length minimum of 5"),
-      ];
-    }
-  }
-};
+const Joi = require("joi");
 
 exports.index = function (req, res) {
   User.findAll()
@@ -58,12 +32,15 @@ exports.show = function (req, res) {
 
 exports.store = (req, res, next) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      res.status(422).json({ errors: errors.array() });
-      return;
-    }
-
+    const body = req.body;
+    const schema = Joi.object().keys({
+      name: Joi.string().required().min(5),
+      email: Joi.string().email().min(5),
+      username: Joi.string().min(5).required(),
+      password: Joi.string().min(6).required(),
+    });
+    const { error } = Joi.validate(body, schema);
+    if (error) return res.status(400).send(error.details[0].message);
     bcrypt.hash(req.body.password, 10).then((hash) => {
       User.create({
         name: req.body.name,
@@ -84,6 +61,17 @@ exports.store = (req, res, next) => {
 };
 
 exports.update = (req, res) => {
+  const body = req.body;
+  const schema = Joi.object().keys({
+    name: Joi.string().required().min(5),
+    email: Joi.string().email().min(5),
+    username: Joi.string().min(5).required(),
+    password: Joi.string().min(6).required(),
+  });
+
+  const { error } = Joi.validate(body, schema);
+  if (error) return res.status(400).send(error.details[0].message);
+
   bcrypt.hash(req.body.password, 10).then((hash) => {
     User.update(
       {
